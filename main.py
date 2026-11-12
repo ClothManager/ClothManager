@@ -1,19 +1,31 @@
-from fastapi import FastAPI
 
-# Creamos la instancia de la aplicación
+from fastapi import FastAPI
+from dotenv import load_dotenv
+import os
+
+# Cargar variables de entorno
+load_dotenv()
+
+# Crear aplicación FastAPI
 app = FastAPI(
-    title="Cloth Manager",
-    version="1.0.0",
+    title=os.getenv("APP_NAME", "ClothManager API"),
+    description="API desarrollada con arquitectura de cuatro capas",
+    version="1.0.0"
 )
 
+# Ruta principal
 @app.get("/")
-def read_root():
-    return {"message": "¡Bienvenido a Cloth Manager!", "status": "activo"}
+def inicio():
+    return {
+        "mensaje": "ClothManager API funcionando correctamente",
+        "estado": "OK"
+    }
 
+# Ruta de verificación
 @app.get("/health")
-def health_check():
+def health():
     return {
         "status": "ok",
         "version": "1.0.0",
-        "environment": "development"
+        "environment": os.getenv("APP_ENV", "development")
     }
