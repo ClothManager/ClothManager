@@ -1,0 +1,293 @@
+import re
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+AREAS_VALIDAS = {
+    "ADMINISTRACION",
+    "PRODUCCION",
+    "BODEGA",
+    "VENTAS",
+    "CONTABILIDAD",
+}
+
+ESTADOS_VALIDOS = {"ACTIVO", "INACTIVO"}
+
+
+class DatosUsuario(BaseModel):
+    nombres: str = Field(min_length=1, max_length=80)
+    apellidos: str = Field(min_length=1, max_length=80)
+    correo: str = Field(min_length=5, max_length=254)
+    nombre_usuario: str = Field(min_length=1, max_length=50)
+    area: str
+
+    @field_validator("correo")
+    @classmethod
+    def validar_correo(cls, valor: str) -> str:
+        valor = valor.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
+            raise ValueError("El correo debe tener un formato válido")
+        return valor
+
+    @field_validator("nombre_usuario")
+    @classmethod
+    def normalizar_nombre_usuario(cls, valor: str) -> str:
+        valor = valor.strip().lower()
+        if not valor:
+            raise ValueError("El nombre de usuario no puede estar vacío")
+        return valor
+
+    @field_validator("nombres", "apellidos")
+    @classmethod
+    def limpiar_nombres(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("Este campo no puede estar vacío")
+        return valor
+
+    @field_validator("area")
+    @classmethod
+    def validar_area(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if valor not in AREAS_VALIDAS:
+            raise ValueError("El área indicada no está permitida")
+        return valor
+
+
+class UsuarioCrear(DatosUsuario):
+    roles: list[str] = Field(default_factory=list)
+    estado: str = "ACTIVO"
+
+    @field_validator("roles")
+    @classmethod
+    def normalizar_roles(cls, valores: list[str]) -> list[str]:
+        return [valor.strip().upper() for valor in valores]
+
+    @field_validator("estado")
+    @classmethod
+    def validar_estado(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if valor not in ESTADOS_VALIDOS:
+            raise ValueError("El estado debe ser ACTIVO o INACTIVO")
+        return valor
+
+
+class UsuarioActualizar(BaseModel):
+    nombres: str | None = Field(default=None, min_length=1, max_length=80)
+    apellidos: str | None = Field(default=None, min_length=1, max_length=80)
+    correo: str | None = Field(default=None, min_length=5, max_length=254)
+    nombre_usuario: str | None = Field(default=None, min_length=1, max_length=50)
+    area: str | None = None
+    estado: str | None = None
+
+    @field_validator("correo")
+    @classmethod
+    def validar_correo(cls, valor: str | None) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
+            raise ValueError("El correo debe tener un formato válido")
+        return valor
+
+    @field_validator("nombre_usuario")
+    @classmethod
+    def normalizar_nombre_usuario(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().lower()
+        if not valor:
+            raise ValueError("El nombre de usuario no puede estar vacío")
+        return valor
+
+    @field_validator("nombres", "apellidos")
+    @classmethod
+    def limpiar_nombres_actualizados(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("Este campo no puede estar vacío")
+        return valor
+
+    @field_validator("area")
+    @classmethod
+    def validar_area_actualizada(cls, valor: str | None) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().upper()
+        if valor not in AREAS_VALIDAS:
+            raise ValueError("El área indicada no está permitida")
+        return valor
+
+    @field_validator("estado")
+    @classmethod
+    def validar_estado_actualizado(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().upper()
+        if valor not in ESTADOS_VALIDOS:
+            raise ValueError("El estado debe ser ACTIVO o INACTIVO")
+        return valor
+
+
+class RolResumen(BaseModel):
+    codigo: str
+    nombre: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UsuarioRespuesta(BaseModel):
+    id: int
+    nombres: str
+    apellidos: str
+    correo: str
+    nombre_usuario: str
+    area: str
+    estado: str
+    creado_en: datetime | None = None
+    roles: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RolCrear(BaseModel):
+    codigo: str = Field(min_length=2, max_length=40)
+    nombre: str = Field(min_length=1, max_length=80)
+    descripcion: str | None = Field(default=None, max_length=250)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo_rol(cls, valor: str) -> str:
+        return valor.strip().upper()
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_rol(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre del rol no puede estar vacío")
+        return valor
+
+
+class RolActualizar(BaseModel):
+    nombre: str | None = Field(default=None, min_length=1, max_length=80)
+    descripcion: str | None = Field(default=None, max_length=250)
+    activo: bool | None = None
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_actualizado(cls, valor: str | None) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre del rol no puede estar vacío")
+        return valor
+
+
+class RolesActualizar(BaseModel):
+    roles: list[str]
+
+    @field_validator("roles")
+    @classmethod
+    def normalizar_roles(cls, valores: list[str]) -> list[str]:
+        return [valor.strip().upper() for valor in valores]
+
+
+class PermisoEntrada(BaseModel):
+    modulo: str = Field(min_length=1, max_length=30)
+    recurso: str = Field(min_length=1, max_length=50)
+    accion: str = Field(min_length=1, max_length=30)
+
+    @field_validator("modulo", "recurso", "accion")
+    @classmethod
+    def normalizar_codigo_permiso(cls, valor: str) -> str:
+        return valor.strip().upper()
+
+
+class PermisosRolActualizar(BaseModel):
+    permisos: list[PermisoEntrada]
+
+
+class PermisoRespuesta(PermisoEntrada):
+    id: int
+    activo: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RolRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    descripcion: str | None = None
+    activo: bool
+    permisos: list[PermisoRespuesta] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ActivarCredenciales(BaseModel):
+    token: str = Field(min_length=20, max_length=200)
+    contrasena: str = Field(min_length=12, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    identificador: str = Field(min_length=1, max_length=254)
+    contrasena: str = Field(min_length=1, max_length=128)
+
+
+class RenovarSesionRequest(BaseModel):
+    refresh_token: str = Field(min_length=20, max_length=200)
+
+
+class CambiarContrasenaRequest(BaseModel):
+    contrasena_actual: str = Field(min_length=1, max_length=128)
+    contrasena_nueva: str = Field(min_length=12, max_length=128)
+
+
+class SolicitarRecuperacionRequest(BaseModel):
+    correo: str = Field(min_length=5, max_length=254)
+
+    @field_validator("correo")
+    @classmethod
+    def validar_correo_recuperacion(cls, valor: str) -> str:
+        valor = valor.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
+            raise ValueError("El correo debe tener un formato válido")
+        return valor
+
+
+class ConfirmarRecuperacionRequest(BaseModel):
+    token: str = Field(min_length=20, max_length=200)
+    contrasena_nueva: str = Field(min_length=12, max_length=128)
+
+
+class TokenRespuesta(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
+    expires_in: int
+    usuario_id: int
+    nombre_usuario: str
+
+
+# Alias para conservar compatibilidad con los nombres del schema anterior.
+UsuarioCreate = UsuarioCrear
+UsuarioUpdate = UsuarioActualizar
+RolCreate = RolCrear
+RolUpdate = RolActualizar
+UsuarioRolesUpdate = RolesActualizar
+RolPermisosUpdate = PermisosRolActualizar

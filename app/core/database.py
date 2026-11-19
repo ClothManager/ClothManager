@@ -1,0 +1,42 @@
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./dev.db")
+
+if not DATABASE_URL.startswith("sqlite:///"):
+    raise RuntimeError("La aplicación debe usar una base de datos SQLite local.")
+
+database_path = DATABASE_URL.removeprefix("sqlite:///")
+
+if database_path != ":memory:":
+    Path(database_path).parent.mkdir(parents=True, exist_ok=True)
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+SessionLocal = sessionmaker(
+    bind=engine,
+    autocommit=False,
+    autoflush=False,
+)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
