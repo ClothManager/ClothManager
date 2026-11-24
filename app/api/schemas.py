@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-
+from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -448,4 +448,54 @@ class ValorParametroEstadoActualizar(BaseModel):
         valor = valor.strip()
         if not valor:
             raise ValueError("El motivo no puede estar vacío")
+        return valor
+class ColeccionCrear(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    anio: int = Field(ge=2000, le=2200)
+    fecha_inicio: date
+    fecha_inicio_preventa: date
+    fecha_cierre_preventa: date
+    fecha_entrega: date
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_coleccion(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+class ColeccionActualizar(BaseModel):
+    nombre: str | None = Field(default=None, min_length=1, max_length=100)
+    anio: int | None = Field(default=None, ge=2000, le=2200)
+    fecha_inicio: date | None = None
+    fecha_inicio_preventa: date | None = None
+    fecha_cierre_preventa: date | None = None
+    fecha_entrega: date | None = None
+    estado: str | None = None
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_actualizado(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+    @field_validator("estado")
+    @classmethod
+    def validar_estado_coleccion(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().upper()
+        if valor not in {"EN_CURSO", "COMPLETADA"}:
+            raise ValueError("El estado debe ser EN_CURSO o COMPLETADA")
         return valor

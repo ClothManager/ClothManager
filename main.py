@@ -1,5 +1,7 @@
 import os
-
+from app.domain.coleccion import Coleccion, SecuenciaColeccion
+from app.api.coleccion_api import router as coleccion_router
+from app.domain.coleccion import Coleccion
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from app.domain.catalogo import (
@@ -95,7 +97,7 @@ app.include_router(usuario_router)
 app.include_router(rol_router)
 app.include_router(parametro_router)
 app.include_router(catalogo_router)
-
+app.include_router(coleccion_router)
 registrar_manejadores(app)
 
 
