@@ -291,3 +291,161 @@ RolCreate = RolCrear
 RolUpdate = RolActualizar
 UsuarioRolesUpdate = RolesActualizar
 RolPermisosUpdate = PermisosRolActualizar
+class ColorCrear(BaseModel):
+    nombre: str = Field(min_length=2, max_length=60)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_color(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+
+        return valor
+
+
+class ColorActualizar(BaseModel):
+    nombre: str = Field(min_length=2, max_length=60)
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_color_actualizado(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+
+        return valor
+
+class ColorRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    activo: bool
+    version: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TallaRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    orden: int
+    activo: bool
+
+    model_config = ConfigDict(from_attributes=True)
+class ColorEstadoActualizar(BaseModel):
+    activo: bool
+    version: int = Field(ge=1)
+    motivo: str = Field(min_length=5, max_length=250)
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El motivo no puede estar vacío")
+
+        return valor
+class CatalogoCrear(BaseModel):
+    codigo: str = Field(min_length=2, max_length=40)
+    nombre: str = Field(min_length=2, max_length=100)
+    descripcion: str | None = Field(default=None, max_length=250)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo_catalogo(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+        return valor
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_catalogo(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class CatalogoActualizar(BaseModel):
+    nombre: str = Field(min_length=2, max_length=100)
+    descripcion: str | None = Field(default=None, max_length=250)
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_catalogo_actualizado(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class CatalogoEstadoActualizar(BaseModel):
+    activo: bool
+    version: int = Field(ge=1)
+    motivo: str = Field(min_length=5, max_length=250)
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo_catalogo(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El motivo no puede estar vacío")
+        return valor
+
+
+class ValorParametroCrear(BaseModel):
+    codigo: str = Field(min_length=1, max_length=40)
+    nombre: str = Field(min_length=1, max_length=100)
+    orden: int = Field(default=1, ge=1)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo_valor(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+        return valor
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_valor(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class ValorParametroActualizar(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    orden: int = Field(ge=1)
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_valor_actualizado(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class ValorParametroEstadoActualizar(BaseModel):
+    activo: bool
+    version: int = Field(ge=1)
+    motivo: str = Field(min_length=5, max_length=250)
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo_valor(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El motivo no puede estar vacío")
+        return valor
