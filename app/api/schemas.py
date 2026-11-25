@@ -499,3 +499,79 @@ class ColeccionActualizar(BaseModel):
         if valor not in {"EN_CURSO", "COMPLETADA"}:
             raise ValueError("El estado debe ser EN_CURSO o COMPLETADA")
         return valor
+class ReferenciaCrear(BaseModel):
+    codigo: str = Field(min_length=1, max_length=30)
+    nombre_referencia: str = Field(min_length=1, max_length=100)
+    coleccion_id: int = Field(gt=0)
+    color_id: int = Field(gt=0)
+    categoria_id: int = Field(gt=0)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+
+        return valor
+
+    @field_validator("nombre_referencia")
+    @classmethod
+    def limpiar_nombre(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError(
+                "El nombre de referencia no puede estar vacío"
+            )
+
+        return valor
+    @field_validator("codigo")
+    @classmethod
+    def limpiar_nombre(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El nombre de referencia no puede estar vacío")
+
+        return valor
+
+
+class ReferenciaColorResumen(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReferenciaColeccionResumen(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    anio: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReferenciaCategoriaResumen(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReferenciaRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre_referencia: str
+    color: ReferenciaColorResumen
+    coleccion: ReferenciaColeccionResumen
+    anio: int
+    categoria: ReferenciaCategoriaResumen
+    activo: bool
+    version: int
+
+    model_config = ConfigDict(from_attributes=True)

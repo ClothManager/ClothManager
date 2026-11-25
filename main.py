@@ -4,6 +4,7 @@ from app.api.coleccion_api import router as coleccion_router
 from app.domain.coleccion import Coleccion
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from app.domain.referencia import Referencia
 from app.domain.catalogo import (
     AuditoriaCatalogo,
     CatalogoParametro,
@@ -11,6 +12,11 @@ from app.domain.catalogo import (
     ValorParametro,
 )
 from app.api.autenticacion_api import router as autenticacion_router
+from app.api.referencia_api import (
+    coleccion_router as coleccion_referencias_router,
+)
+from app.api.referencia_api import router as referencia_router
+from app.domain.referencia import Referencia
 from app.api.catalogo_api import router as catalogo_router
 from app.api.parametro_api import router as parametro_router
 from app.api.rol_api import router as rol_router
@@ -48,7 +54,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-
+Base.metadata.create_all(bind=engine)
 @app.on_event("startup")
 def crear_tablas():
     Base.metadata.create_all(bind=engine)
@@ -98,6 +104,8 @@ app.include_router(rol_router)
 app.include_router(parametro_router)
 app.include_router(catalogo_router)
 app.include_router(coleccion_router)
+app.include_router(referencia_router)
+app.include_router(coleccion_referencias_router)
 registrar_manejadores(app)
 
 
