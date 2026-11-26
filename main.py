@@ -18,6 +18,7 @@ from app.api.referencia_api import (
     coleccion_router as coleccion_referencias_router,
 )
 from app.api.referencia_api import router as referencia_router
+
 from app.domain.referencia import Referencia
 from app.api.catalogo_api import router as catalogo_router
 from app.api.parametro_api import router as parametro_router
@@ -48,7 +49,11 @@ from app.domain.usuario import (
     Usuario,
     UsuarioRol,
 )
-
+from app.api.insumo_api import (
+    insumos_router,
+    referencias_router as referencia_insumos_router,
+)
+from app.domain.insumo import Insumo, RequerimientoInsumoReferencia
 
 load_dotenv()
 
@@ -112,6 +117,8 @@ app.include_router(referencia_router)
 app.include_router(coleccion_referencias_router)
 app.include_router(plan_talla_router)
 app.include_router(precio_referencia_router)
+app.include_router(insumos_router)
+app.include_router(referencia_insumos_router)
 registrar_manejadores(app)
 
 
