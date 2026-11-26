@@ -1,4 +1,5 @@
 import re
+from typing import Literal
 from datetime import date, datetime
 from decimal import Decimal
 from pydantic import (
@@ -662,6 +663,83 @@ class PreciosReferenciaActualizar(BaseModel):
             )
 
         return valor
+class InsumoCrear(BaseModel):
+    codigo: str = Field(min_length=1, max_length=30)
+    nombre: str = Field(min_length=1, max_length=100)
+    tipo_insumo_id: int = Field(gt=0, alias="tipoInsumoId")
+    unidad_medida_id: int = Field(gt=0, alias="unidadMedidaId")
+    costo_referencia: Decimal | None = Field(
+        default=None,
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+        alias="costoReferencia",
+    )
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo_insumo(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+        return valor
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_insumo(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class RequerimientoInsumoEntrada(BaseModel):
+    insumo_id: int = Field(gt=0, alias="insumoId")
+    cantidad: Decimal = Field(
+        gt=Decimal("0"),
+        max_digits=12,
+        decimal_places=3,
+    )
+    unidad_medida_id: int = Field(gt=0, alias="unidadMedidaId")
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+class RequerimientosInsumoActualizar(BaseModel):
+    base_calculo: Literal["POR_UNIDAD", "POR_LOTE"] = Field(
+        alias="baseCalculo"
+    )
+    insumos: list[RequerimientoInsumoEntrada] = Field(
+        default_factory=list,
+        max_length=100,
+    )
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+    @field_validator("insumos")
+    @classmethod
+    def validar_insumos_sin_duplicados(
+        cls,
+        valores: list[RequerimientoInsumoEntrada],
+    ) -> list[RequerimientoInsumoEntrada]:
+        ids = [item.insumo_id for item in valores]
+
+        if len(ids) != len(set(ids)):
+            raise ValueError(
+                "No se puede repetir un insumo en la misma base de cálculo"
+            )
+
+        return valores
 
 # Alias para conservar compatibilidad con los nombres anteriores.
 UsuarioCreate = UsuarioCrear

@@ -71,10 +71,14 @@ CATALOGOS_BASE = {
             ("USD", "Dólares estadounidenses"),
         ],
     ),
-    "UNIDAD_MEDIDA": (
+       "UNIDAD_MEDIDA": (
         "Unidad de medida",
         [
             ("CENTIMETRO", "Centímetro (cm)"),
+            ("METRO", "Metro (m)"),
+            ("UNIDAD", "Unidad"),
+            ("CONO", "Cono"),
+            ("ROLLO", "Rollo"),
         ],
     ),
         "TIPO_CLIENTE_MAYORISTA": (
