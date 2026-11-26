@@ -23,6 +23,8 @@ from app.api.rol_api import router as rol_router
 from app.api.usuario_api import router as usuario_router
 from app.core.database import Base, SessionLocal, engine
 from app.core.errores import registrar_manejadores
+from app.domain.plan_talla_referencia import PlanTallaReferencia
+from app.api.plan_talla_api import router as plan_talla_router
 from app.core.seed_catalogos import sembrar_catalogos_base
 from app.domain.autenticacion import (
     CredencialUsuario,
@@ -106,6 +108,7 @@ app.include_router(catalogo_router)
 app.include_router(coleccion_router)
 app.include_router(referencia_router)
 app.include_router(coleccion_referencias_router)
+app.include_router(plan_talla_router)
 registrar_manejadores(app)
 
 
