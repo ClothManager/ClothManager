@@ -4,6 +4,8 @@ from app.api.coleccion_api import router as coleccion_router
 from app.domain.coleccion import Coleccion
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from app.api.precio_referencia_api import router as precio_referencia_router
+from app.domain.precio_referencia import PrecioReferencia
 from app.domain.referencia import Referencia
 from app.domain.catalogo import (
     AuditoriaCatalogo,
@@ -109,6 +111,7 @@ app.include_router(coleccion_router)
 app.include_router(referencia_router)
 app.include_router(coleccion_referencias_router)
 app.include_router(plan_talla_router)
+app.include_router(precio_referencia_router)
 registrar_manejadores(app)
 
 

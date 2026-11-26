@@ -1,6 +1,6 @@
 import re
 from datetime import date, datetime
-
+from decimal import Decimal
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -616,7 +616,52 @@ class CantidadesTallaActualizar(BaseModel):
             normalizadas[codigo_talla] = cantidad
 
         return normalizadas
+class PreciosReferenciaActualizar(BaseModel):
+    costo_produccion: Decimal = Field(
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+        alias="costoProduccion",
+    )
+    precio_detal: Decimal = Field(
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+        alias="precioDetal",
+    )
+    precio_mayorista_nacional: Decimal = Field(
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+        alias="precioMayoristaNacional",
+    )
+    precio_mayorista_exportacion: Decimal = Field(
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+        alias="precioMayoristaExportacion",
+    )
+    moneda: str = Field(
+        min_length=3,
+        max_length=3,
+    )
 
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+    @field_validator("moneda")
+    @classmethod
+    def normalizar_moneda(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+
+        if not re.fullmatch(r"[A-Z]{3}", valor):
+            raise ValueError(
+                "La moneda debe ser un código de tres letras, como COP o USD"
+            )
+
+        return valor
 
 # Alias para conservar compatibilidad con los nombres anteriores.
 UsuarioCreate = UsuarioCrear
