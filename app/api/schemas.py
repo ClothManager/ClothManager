@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-
+from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -291,3 +291,287 @@ RolCreate = RolCrear
 RolUpdate = RolActualizar
 UsuarioRolesUpdate = RolesActualizar
 RolPermisosUpdate = PermisosRolActualizar
+class ColorCrear(BaseModel):
+    nombre: str = Field(min_length=2, max_length=60)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_color(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+
+        return valor
+
+
+class ColorActualizar(BaseModel):
+    nombre: str = Field(min_length=2, max_length=60)
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_color_actualizado(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+
+        return valor
+
+class ColorRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    activo: bool
+    version: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TallaRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    orden: int
+    activo: bool
+
+    model_config = ConfigDict(from_attributes=True)
+class ColorEstadoActualizar(BaseModel):
+    activo: bool
+    version: int = Field(ge=1)
+    motivo: str = Field(min_length=5, max_length=250)
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El motivo no puede estar vacío")
+
+        return valor
+class CatalogoCrear(BaseModel):
+    codigo: str = Field(min_length=2, max_length=40)
+    nombre: str = Field(min_length=2, max_length=100)
+    descripcion: str | None = Field(default=None, max_length=250)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo_catalogo(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+        return valor
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_catalogo(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class CatalogoActualizar(BaseModel):
+    nombre: str = Field(min_length=2, max_length=100)
+    descripcion: str | None = Field(default=None, max_length=250)
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_catalogo_actualizado(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class CatalogoEstadoActualizar(BaseModel):
+    activo: bool
+    version: int = Field(ge=1)
+    motivo: str = Field(min_length=5, max_length=250)
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo_catalogo(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El motivo no puede estar vacío")
+        return valor
+
+
+class ValorParametroCrear(BaseModel):
+    codigo: str = Field(min_length=1, max_length=40)
+    nombre: str = Field(min_length=1, max_length=100)
+    orden: int = Field(default=1, ge=1)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo_valor(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+        return valor
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_valor(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class ValorParametroActualizar(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    orden: int = Field(ge=1)
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_valor_actualizado(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+
+class ValorParametroEstadoActualizar(BaseModel):
+    activo: bool
+    version: int = Field(ge=1)
+    motivo: str = Field(min_length=5, max_length=250)
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo_valor(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El motivo no puede estar vacío")
+        return valor
+class ColeccionCrear(BaseModel):
+    nombre: str = Field(min_length=1, max_length=100)
+    anio: int = Field(ge=2000, le=2200)
+    fecha_inicio: date
+    fecha_inicio_preventa: date
+    fecha_cierre_preventa: date
+    fecha_entrega: date
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_coleccion(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+class ColeccionActualizar(BaseModel):
+    nombre: str | None = Field(default=None, min_length=1, max_length=100)
+    anio: int | None = Field(default=None, ge=2000, le=2200)
+    fecha_inicio: date | None = None
+    fecha_inicio_preventa: date | None = None
+    fecha_cierre_preventa: date | None = None
+    fecha_entrega: date | None = None
+    estado: str | None = None
+    version: int = Field(ge=1)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre_actualizado(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El nombre no puede estar vacío")
+        return valor
+
+    @field_validator("estado")
+    @classmethod
+    def validar_estado_coleccion(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().upper()
+        if valor not in {"EN_CURSO", "COMPLETADA"}:
+            raise ValueError("El estado debe ser EN_CURSO o COMPLETADA")
+        return valor
+class ReferenciaCrear(BaseModel):
+    codigo: str = Field(min_length=1, max_length=30)
+    nombre_referencia: str = Field(min_length=1, max_length=100)
+    coleccion_id: int = Field(gt=0)
+    color_id: int = Field(gt=0)
+    categoria_id: int = Field(gt=0)
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar_codigo(cls, valor: str) -> str:
+        valor = valor.strip().upper()
+
+        if not valor:
+            raise ValueError("El código no puede estar vacío")
+
+        return valor
+
+    @field_validator("nombre_referencia")
+    @classmethod
+    def limpiar_nombre(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError(
+                "El nombre de referencia no puede estar vacío"
+            )
+
+        return valor
+    @field_validator("codigo")
+    @classmethod
+    def limpiar_nombre(cls, valor: str) -> str:
+        valor = valor.strip()
+
+        if not valor:
+            raise ValueError("El nombre de referencia no puede estar vacío")
+
+        return valor
+
+
+class ReferenciaColorResumen(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReferenciaColeccionResumen(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    anio: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReferenciaCategoriaResumen(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReferenciaRespuesta(BaseModel):
+    id: int
+    codigo: str
+    nombre_referencia: str
+    color: ReferenciaColorResumen
+    coleccion: ReferenciaColeccionResumen
+    anio: int
+    categoria: ReferenciaCategoriaResumen
+    activo: bool
+    version: int
+
+    model_config = ConfigDict(from_attributes=True)
