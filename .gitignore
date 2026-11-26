@@ -1,0 +1,18 @@
+
+# Entorno virtual
+venv/
+.venv/
+
+# Variables privadas
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Bases de datos locales
+*.db
+
+# IDE
+.vscode/
+dev_outbox/
