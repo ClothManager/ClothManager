@@ -1,6 +1,7 @@
+
 import re
-from datetime import datetime
-from datetime import date
+from datetime import date, datetime
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -15,6 +16,10 @@ AREAS_VALIDAS = {
 ESTADOS_VALIDOS = {"ACTIVO", "INACTIVO"}
 
 
+# ============================================================
+# USUARIOS
+# ============================================================
+
 class DatosUsuario(BaseModel):
     nombres: str = Field(min_length=1, max_length=80)
     apellidos: str = Field(min_length=1, max_length=80)
@@ -26,32 +31,40 @@ class DatosUsuario(BaseModel):
     @classmethod
     def validar_correo(cls, valor: str) -> str:
         valor = valor.strip().lower()
+
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
             raise ValueError("El correo debe tener un formato válido")
+
         return valor
 
     @field_validator("nombre_usuario")
     @classmethod
     def normalizar_nombre_usuario(cls, valor: str) -> str:
         valor = valor.strip().lower()
+
         if not valor:
             raise ValueError("El nombre de usuario no puede estar vacío")
+
         return valor
 
     @field_validator("nombres", "apellidos")
     @classmethod
     def limpiar_nombres(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("Este campo no puede estar vacío")
+
         return valor
 
     @field_validator("area")
     @classmethod
     def validar_area(cls, valor: str) -> str:
         valor = valor.strip().upper()
+
         if valor not in AREAS_VALIDAS:
             raise ValueError("El área indicada no está permitida")
+
         return valor
 
 
@@ -68,8 +81,10 @@ class UsuarioCrear(DatosUsuario):
     @classmethod
     def validar_estado(cls, valor: str) -> str:
         valor = valor.strip().upper()
+
         if valor not in ESTADOS_VALIDOS:
             raise ValueError("El estado debe ser ACTIVO o INACTIVO")
+
         return valor
 
 
@@ -86,9 +101,12 @@ class UsuarioActualizar(BaseModel):
     def validar_correo(cls, valor: str | None) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip().lower()
+
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
             raise ValueError("El correo debe tener un formato válido")
+
         return valor
 
     @field_validator("nombre_usuario")
@@ -99,9 +117,12 @@ class UsuarioActualizar(BaseModel):
     ) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip().lower()
+
         if not valor:
             raise ValueError("El nombre de usuario no puede estar vacío")
+
         return valor
 
     @field_validator("nombres", "apellidos")
@@ -112,9 +133,12 @@ class UsuarioActualizar(BaseModel):
     ) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip()
+
         if not valor:
             raise ValueError("Este campo no puede estar vacío")
+
         return valor
 
     @field_validator("area")
@@ -122,9 +146,12 @@ class UsuarioActualizar(BaseModel):
     def validar_area_actualizada(cls, valor: str | None) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip().upper()
+
         if valor not in AREAS_VALIDAS:
             raise ValueError("El área indicada no está permitida")
+
         return valor
 
     @field_validator("estado")
@@ -135,9 +162,12 @@ class UsuarioActualizar(BaseModel):
     ) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip().upper()
+
         if valor not in ESTADOS_VALIDOS:
             raise ValueError("El estado debe ser ACTIVO o INACTIVO")
+
         return valor
 
 
@@ -162,6 +192,10 @@ class UsuarioRespuesta(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# ============================================================
+# ROLES Y PERMISOS
+# ============================================================
+
 class RolCrear(BaseModel):
     codigo: str = Field(min_length=2, max_length=40)
     nombre: str = Field(min_length=1, max_length=80)
@@ -176,8 +210,10 @@ class RolCrear(BaseModel):
     @classmethod
     def limpiar_nombre_rol(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre del rol no puede estar vacío")
+
         return valor
 
 
@@ -191,9 +227,12 @@ class RolActualizar(BaseModel):
     def limpiar_nombre_actualizado(cls, valor: str | None) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre del rol no puede estar vacío")
+
         return valor
 
 
@@ -214,7 +253,12 @@ class PermisoEntrada(BaseModel):
     @field_validator("modulo", "recurso", "accion")
     @classmethod
     def normalizar_codigo_permiso(cls, valor: str) -> str:
-        return valor.strip().upper()
+        valor = valor.strip().upper()
+
+        if not valor:
+            raise ValueError("El código del permiso no puede estar vacío")
+
+        return valor
 
 
 class PermisosRolActualizar(BaseModel):
@@ -238,6 +282,10 @@ class RolRespuesta(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+# ============================================================
+# AUTENTICACIÓN Y RECUPERACIÓN DE CUENTA
+# ============================================================
 
 class ActivarCredenciales(BaseModel):
     token: str = Field(min_length=20, max_length=200)
@@ -265,8 +313,10 @@ class SolicitarRecuperacionRequest(BaseModel):
     @classmethod
     def validar_correo_recuperacion(cls, valor: str) -> str:
         valor = valor.strip().lower()
+
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
             raise ValueError("El correo debe tener un formato válido")
+
         return valor
 
 
@@ -284,13 +334,22 @@ class TokenRespuesta(BaseModel):
     nombre_usuario: str
 
 
-# Alias para conservar compatibilidad con los nombres del schema anterior.
+# ============================================================
+# ALIAS DE COMPATIBILIDAD
+# ============================================================
+
 UsuarioCreate = UsuarioCrear
 UsuarioUpdate = UsuarioActualizar
 RolCreate = RolCrear
 RolUpdate = RolActualizar
 UsuarioRolesUpdate = RolesActualizar
 RolPermisosUpdate = PermisosRolActualizar
+
+
+# ============================================================
+# COLORES Y TALLAS
+# ============================================================
+
 class ColorCrear(BaseModel):
     nombre: str = Field(min_length=2, max_length=60)
 
@@ -319,6 +378,7 @@ class ColorActualizar(BaseModel):
 
         return valor
 
+
 class ColorRespuesta(BaseModel):
     id: int
     codigo: str
@@ -337,6 +397,8 @@ class TallaRespuesta(BaseModel):
     activo: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
 class ColorEstadoActualizar(BaseModel):
     activo: bool
     version: int = Field(ge=1)
@@ -351,6 +413,12 @@ class ColorEstadoActualizar(BaseModel):
             raise ValueError("El motivo no puede estar vacío")
 
         return valor
+
+
+# ============================================================
+# CATÁLOGOS
+# ============================================================
+
 class CatalogoCrear(BaseModel):
     codigo: str = Field(min_length=2, max_length=40)
     nombre: str = Field(min_length=2, max_length=100)
@@ -360,16 +428,20 @@ class CatalogoCrear(BaseModel):
     @classmethod
     def normalizar_codigo_catalogo(cls, valor: str) -> str:
         valor = valor.strip().upper()
+
         if not valor:
             raise ValueError("El código no puede estar vacío")
+
         return valor
 
     @field_validator("nombre")
     @classmethod
     def limpiar_nombre_catalogo(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre no puede estar vacío")
+
         return valor
 
 
@@ -382,8 +454,10 @@ class CatalogoActualizar(BaseModel):
     @classmethod
     def limpiar_nombre_catalogo_actualizado(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre no puede estar vacío")
+
         return valor
 
 
@@ -396,10 +470,16 @@ class CatalogoEstadoActualizar(BaseModel):
     @classmethod
     def limpiar_motivo_catalogo(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El motivo no puede estar vacío")
+
         return valor
 
+
+# ============================================================
+# VALORES DE PARÁMETROS
+# ============================================================
 
 class ValorParametroCrear(BaseModel):
     codigo: str = Field(min_length=1, max_length=40)
@@ -410,16 +490,20 @@ class ValorParametroCrear(BaseModel):
     @classmethod
     def normalizar_codigo_valor(cls, valor: str) -> str:
         valor = valor.strip().upper()
+
         if not valor:
             raise ValueError("El código no puede estar vacío")
+
         return valor
 
     @field_validator("nombre")
     @classmethod
     def limpiar_nombre_valor(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre no puede estar vacío")
+
         return valor
 
 
@@ -432,8 +516,10 @@ class ValorParametroActualizar(BaseModel):
     @classmethod
     def limpiar_nombre_valor_actualizado(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre no puede estar vacío")
+
         return valor
 
 
@@ -446,9 +532,17 @@ class ValorParametroEstadoActualizar(BaseModel):
     @classmethod
     def limpiar_motivo_valor(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El motivo no puede estar vacío")
+
         return valor
+
+
+# ============================================================
+# COLECCIONES
+# ============================================================
+
 class ColeccionCrear(BaseModel):
     nombre: str = Field(min_length=1, max_length=100)
     anio: int = Field(ge=2000, le=2200)
@@ -461,9 +555,13 @@ class ColeccionCrear(BaseModel):
     @classmethod
     def limpiar_nombre_coleccion(cls, valor: str) -> str:
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre no puede estar vacío")
+
         return valor
+
+
 class ColeccionActualizar(BaseModel):
     nombre: str | None = Field(default=None, min_length=1, max_length=100)
     anio: int | None = Field(default=None, ge=2000, le=2200)
@@ -482,9 +580,12 @@ class ColeccionActualizar(BaseModel):
     ) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip()
+
         if not valor:
             raise ValueError("El nombre no puede estar vacío")
+
         return valor
 
     @field_validator("estado")
@@ -495,10 +596,19 @@ class ColeccionActualizar(BaseModel):
     ) -> str | None:
         if valor is None:
             return None
+
         valor = valor.strip().upper()
+
         if valor not in {"EN_CURSO", "COMPLETADA"}:
             raise ValueError("El estado debe ser EN_CURSO o COMPLETADA")
+
         return valor
+
+
+# ============================================================
+# REFERENCIAS
+# ============================================================
+
 class ReferenciaCrear(BaseModel):
     codigo: str = Field(min_length=1, max_length=30)
     nombre_referencia: str = Field(min_length=1, max_length=100)
@@ -525,15 +635,6 @@ class ReferenciaCrear(BaseModel):
             raise ValueError(
                 "El nombre de referencia no puede estar vacío"
             )
-
-        return valor
-    @field_validator("codigo")
-    @classmethod
-    def limpiar_nombre(cls, valor: str) -> str:
-        valor = valor.strip()
-
-        if not valor:
-            raise ValueError("El nombre de referencia no puede estar vacío")
 
         return valor
 

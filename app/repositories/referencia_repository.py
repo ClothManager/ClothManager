@@ -1,7 +1,12 @@
+
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
-from app.domain.catalogo import AuditoriaCatalogo, CatalogoParametro, ValorParametro
+from app.domain.catalogo import (
+    AuditoriaCatalogo,
+    CatalogoParametro,
+    ValorParametro,
+)
 from app.domain.coleccion import Coleccion
 from app.domain.parametro import Color
 from app.domain.referencia import Referencia
@@ -15,10 +20,15 @@ class ReferenciaRepository:
     def es_administrador(self, usuario_id: int) -> bool:
         asignacion = (
             self.db.query(UsuarioRol)
-            .join(Rol, Rol.id == UsuarioRol.rol_id)
+            .join(
+                Rol,
+                Rol.id == UsuarioRol.rol_id,
+            )
             .filter(
                 UsuarioRol.usuario_id == usuario_id,
-                Rol.codigo == "ADMINISTRADOR",
+                Rol.codigo.in_(
+                    ("SUPERADMINISTRADOR", "ADMINISTRADOR")
+                ),
                 Rol.activo.is_(True),
             )
             .first()
@@ -61,7 +71,9 @@ class ReferenciaRepository:
     def existe_codigo(self, codigo: str) -> bool:
         return (
             self.db.query(Referencia.id)
-            .filter(func.lower(Referencia.codigo) == codigo.lower())
+            .filter(
+                func.lower(Referencia.codigo) == codigo.lower()
+            )
             .first()
             is not None
         )
@@ -138,19 +150,26 @@ class ReferenciaRepository:
             )
 
         if anio is not None:
-            consulta = consulta.filter(Referencia.anio == anio)
+            consulta = consulta.filter(
+                Referencia.anio == anio
+            )
 
         if color_id is not None:
-            consulta = consulta.filter(Referencia.color_id == color_id)
+            consulta = consulta.filter(
+                Referencia.color_id == color_id
+            )
 
         if categoria_id is not None:
             consulta = consulta.filter(
                 Referencia.categoria_id == categoria_id
             )
 
-        total = consulta.with_entities(
-            func.count(Referencia.id)
-        ).scalar() or 0
+        total = (
+            consulta.with_entities(
+                func.count(Referencia.id)
+            ).scalar()
+            or 0
+        )
 
         resultados = (
             consulta
