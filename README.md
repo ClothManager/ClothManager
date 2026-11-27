@@ -1,4 +1,4 @@
-# ClothManager
+git status# ClothManager
 # ClothManager - Proyecto Web Services
 
 **Universidad:** UTS
