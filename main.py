@@ -18,7 +18,16 @@ from app.api.referencia_api import (
     coleccion_router as coleccion_referencias_router,
 )
 from app.api.referencia_api import router as referencia_router
-
+from app.api.compra_insumo_api import router as compra_insumo_router
+from app.domain.compra_insumo import (
+    CompraInsumo,
+    CompraInsumoDetalle,
+    ExistenciaInsumo,
+    MovimientoBodega,
+    Proveedor,
+    RecepcionInsumo,
+    RecepcionInsumoDetalle,
+)
 from app.domain.referencia import Referencia
 from app.api.catalogo_api import router as catalogo_router
 from app.api.parametro_api import router as parametro_router
@@ -119,6 +128,7 @@ app.include_router(plan_talla_router)
 app.include_router(precio_referencia_router)
 app.include_router(insumos_router)
 app.include_router(referencia_insumos_router)
+app.include_router(compra_insumo_router)
 registrar_manejadores(app)
 
 
