@@ -740,7 +740,135 @@ class RequerimientosInsumoActualizar(BaseModel):
             )
 
         return valores
+class ProveedorCrear(BaseModel):
+    identificacion: str = Field(min_length=3, max_length=30)
+    nombre_razon_social: str = Field(min_length=2, max_length=120)
+    telefono: str | None = Field(default=None, max_length=30)
+    correo: str | None = Field(default=None, max_length=254)
 
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("identificacion", "nombre_razon_social")
+    @classmethod
+    def limpiar_texto_proveedor(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("El campo no puede estar vacío")
+        return valor
+
+    @field_validator("correo")
+    @classmethod
+    def normalizar_correo_proveedor(
+        cls,
+        valor: str | None,
+    ) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip().lower()
+        if valor and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
+            raise ValueError("El correo no tiene un formato válido")
+        return valor or None
+
+
+class CompraInsumoLineaCrear(BaseModel):
+    insumo_id: int = Field(gt=0, alias="insumoId")
+    cantidad_solicitada: Decimal = Field(
+        gt=Decimal("0"),
+        max_digits=12,
+        decimal_places=3,
+        alias="cantidadSolicitada",
+    )
+    unidad_medida_id: int = Field(gt=0, alias="unidadMedidaId")
+    costo_unitario: Decimal = Field(
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+        alias="costoUnitario",
+    )
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+
+class CompraInsumoCrear(BaseModel):
+    proveedor_id: int = Field(gt=0, alias="proveedorId")
+    fecha_compra: date = Field(alias="fechaCompra")
+    lineas: list[CompraInsumoLineaCrear] = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+
+class RecepcionInsumoLineaEntrada(BaseModel):
+    compra_detalle_id: int = Field(gt=0, alias="compraDetalleId")
+    cantidad_recibida: Decimal = Field(
+        ge=Decimal("0"),
+        max_digits=12,
+        decimal_places=3,
+        alias="cantidadRecibida",
+    )
+    unidad_medida_id: int = Field(gt=0, alias="unidadMedidaId")
+    novedad: str | None = Field(default=None, max_length=250)
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+    @field_validator("novedad")
+    @classmethod
+    def limpiar_novedad(cls, valor: str | None) -> str | None:
+        if valor is None:
+            return None
+        valor = valor.strip()
+        return valor or None
+
+
+class RecepcionInsumoCrear(BaseModel):
+    lineas: list[RecepcionInsumoLineaEntrada] = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+
+    @field_validator("lineas")
+    @classmethod
+    def evitar_lineas_repetidas(
+        cls,
+        valores: list[RecepcionInsumoLineaEntrada],
+    ) -> list[RecepcionInsumoLineaEntrada]:
+        ids = [linea.compra_detalle_id for linea in valores]
+        if len(ids) != len(set(ids)):
+            raise ValueError(
+                "No se puede repetir una línea de compra en la recepción"
+            )
+        return valores
+
+
+class CompraInsumoEstadoActualizar(BaseModel):
+    estado: Literal["CANCELADA"]
+    motivo: str = Field(min_length=5, max_length=250)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("motivo")
+    @classmethod
+    def limpiar_motivo_cancelacion(cls, valor: str) -> str:
+        valor = valor.strip()
+        if len(valor) < 5:
+            raise ValueError("Escribe un motivo de cancelación")
+        return valor
 # Alias para conservar compatibilidad con los nombres anteriores.
 UsuarioCreate = UsuarioCrear
 UsuarioUpdate = UsuarioActualizar
